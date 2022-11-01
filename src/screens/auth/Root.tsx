@@ -2,19 +2,17 @@ import React, {FC, useEffect, useState} from "react";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {LoginScreen} from "./LoginScreen";
 import {AuthenticatedRoot} from "./AuthenticatedRoot";
-import {headerStyle} from "../../style/HeaderStyle";
+import {headerStyle} from "../../style/theme";
 import {getLang, getStorageValue, setStorageValue} from "../../util/Util";
 import {SignupScreen} from "./SignupScreen";
 import {User, onAuthStateChanged, getAuth} from "firebase/auth";
 import {LangContext} from "../../util/Context";
-import {useHeaderBg} from "../../hooks/StyleHooks";
 import {Center, Spinner, useColorModeValue} from "native-base";
 
 const Stack = createNativeStackNavigator();
 
 export const Root: FC = (_) => {
     const [lang, setLang] = useState<{key: string, lang: any}>(getLang(null));
-    const headerBg = useHeaderBg();
     const bgColor = useColorModeValue("coolGray.50", "blueGray.800");
 
     const [user, setUser] = useState<User>(null);
@@ -52,7 +50,7 @@ export const Root: FC = (_) => {
                 setLang(newLang);
                 await setStorageValue("@language", newLang.key);
             }}}>
-            <Stack.Navigator screenOptions={headerStyle(headerBg)}>
+            <Stack.Navigator screenOptions={headerStyle}>
                 {user ? (
                     <Stack.Screen name={"authenticated-root"} component={AuthenticatedRoot} options={{headerShown: false}}/>
                 ) : (

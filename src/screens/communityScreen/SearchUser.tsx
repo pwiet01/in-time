@@ -1,6 +1,5 @@
 import React, {FC, useContext, useState} from "react";
 import {NavScreen} from "../../util/NavScreen";
-import {ScreenWrapper} from "../../util/ScreenWrapper";
 import {Center, Heading, Input, useToast, View} from "native-base";
 import {AsyncButton} from "../../util/AsyncButton";
 import {LangContext} from "../../util/Context";
@@ -40,17 +39,15 @@ export const SearchUser: FC<NavScreen> = (props) => {
     }
 
     return (
-        <ScreenWrapper>
-            <Center w={"100%"} h={"100%"}>
-                <View w={"80%"} alignItems={"flex-start"}>
-                    <Heading marginBottom={5}>{lang.community.searchUser}</Heading>
-                    <View w={"100%"} flexDir={"row"} alignItems={"center"} marginBottom={5}>
-                        <Input placeholder={lang.community.uid} value={uid} onChangeText={setUid} marginRight={2} flex={1} autoCapitalize={"none"} />
-                        <AsyncButton onPress={handleSearch}>{lang.community.search}</AsyncButton>
-                    </View>
-                    {user && <UserProfileStatic user={user} onPress={handleAdd} />}
+        <Center w={"100%"} h={"100%"}>
+            <View w={"80%"} alignItems={"flex-start"}>
+                <Heading marginBottom={5}>{lang.community.searchUser}</Heading>
+                <View w={"100%"} flexDir={"row"} alignItems={"center"} marginBottom={5}>
+                    <Input placeholder={lang.community.uid} value={uid} onChangeText={setUid} marginRight={2} flex={1} autoCapitalize={"none"} />
+                    <AsyncButton onPress={handleSearch}>{lang.community.search}</AsyncButton>
                 </View>
-            </Center>
-        </ScreenWrapper>
+                {user && <UserProfileStatic user={user} onPress={handleAdd} />}
+            </View>
+        </Center>
     );
 }

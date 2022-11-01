@@ -3,10 +3,9 @@ import {NavScreen} from "../util/NavScreen";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {UserList} from "./communityScreen/UserList";
 import {LangContext} from "../util/Context";
-import {useHeaderBg} from "../hooks/StyleHooks";
 import {Leaderboard} from "./communityScreen/Leaderboard";
 import {UsersContext} from "../util/Context";
-import {headerStyle} from "../style/HeaderStyle";
+import {headerStyle} from "../style/theme";
 import {getDatabase, onValue, ref} from "firebase/database";
 import {getAuth} from "firebase/auth";
 import {SearchUser} from "./communityScreen/SearchUser";
@@ -16,7 +15,6 @@ const Stack = createNativeStackNavigator();
 
 export const CommunityScreen: FC<NavScreen> = (props) => {
     const {lang} = useContext(LangContext);
-    const headerBg = useHeaderBg();
 
     const [friends, setFriends] = useState<string[]>([]);
     const context = {friends: friends};
@@ -32,7 +30,7 @@ export const CommunityScreen: FC<NavScreen> = (props) => {
     return (
         <UsersContext.Provider value={context}>
             <Stack.Navigator screenOptions={{
-                ...headerStyle(headerBg),
+                ...headerStyle,
 
             }}>
                 <Stack.Screen name={"users"} component={UserList} options={{title: lang.screens.community}} />

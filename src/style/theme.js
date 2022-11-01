@@ -1,5 +1,4 @@
 import {extendTheme} from "native-base";
-import {getStorageValue, setStorageValue} from "../util/Util";
 
 export const theme = extendTheme({
     config: {
@@ -21,7 +20,15 @@ export const theme = extendTheme({
     }
 });
 
-export const colorModeManager = {
-    get: async () => await getStorageValue("@color-mode") === 'dark' ? 'dark' : 'light',
-    set: async (value) => await setStorageValue("@color-mode", value)
+export const headerStyle = {
+    headerStyle: {
+        backgroundColor: '#003F5E'
+    },
+    headerTintColor: "white"
 };
+
+export const tabBarStyle = {
+    tabBarBackground: '#334155',
+    activeColor: '#006BA1',
+    inactiveColor: '#f3f4f6'
+}

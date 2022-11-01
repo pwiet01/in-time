@@ -3,12 +3,11 @@ import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import {LangContext, BadgeContext} from "../../util/Context";
 import {Ionicons, MaterialCommunityIcons} from "@expo/vector-icons";
 import {Center, Icon, View} from "native-base";
-import {headerStyle} from "../../style/HeaderStyle";
+import {headerStyle, tabBarStyle} from "../../style/theme";
 import {CommunityScreen} from "../CommunityScreen";
 import {HomeScreen} from "../HomeScreen";
 import {SettingsScreen} from "../SettingsScreen";
-import {useHeaderBg, useTabBarStyle} from "../../hooks/StyleHooks";
-import {getDatabase, onValue, ref, onDisconnect, set} from "firebase/database";
+import {getDatabase, onValue, ref} from "firebase/database";
 import {getAuth} from "firebase/auth";
 import {BadgeColor, BadgedElement} from "../../util/BadgedElement";
 
@@ -16,9 +15,7 @@ const Tab = createBottomTabNavigator();
 
 export const AuthenticatedRoot: FC = (_) => {
     const {lang} = useContext(LangContext);
-
-    const headerBg = useHeaderBg();
-    const {tabBarBackground, activeColor, inactiveColor} = useTabBarStyle();
+    const {tabBarBackground, activeColor, inactiveColor} = tabBarStyle;
 
     const [friendRequests, setFriendRequests] = useState<string[]>([]);
     const context = {friendRequests: friendRequests};
@@ -28,26 +25,6 @@ export const AuthenticatedRoot: FC = (_) => {
         return onValue(userRef, (snapshot) => {
             const value = snapshot.val();
             setFriendRequests(value ? Object.keys(value) : []);
-        });
-    }, []);
-
-    useEffect(() => {
-        const me = getAuth().currentUser.uid;
-        const db = getDatabase();
-        const connectedRef = ref(db, ".info/connected");
-        const userStatusRef = ref(db, "users/" + me + "/isOnline");
-
-        return onValue(connectedRef, async (snap) => {
-            if (!snap.val()) {
-                return;
-            }
-
-            try {
-                await onDisconnect(userStatusRef).set(false);
-                await set(userStatusRef, true);
-            } catch (e) {
-                console.log(e);
-            }
         });
     }, []);
 
@@ -87,16 +64,12 @@ export const AuthenticatedRoot: FC = (_) => {
         return icon;
     }
 
-    const badges = {
-        friendRequests: friendRequests.length > 0 ? friendRequests.length : null
-    };
-
     return (
         <BadgeContext.Provider value={context}>
             <Tab.Navigator
                 initialRouteName={"home"}
                 screenOptions={({route}) => ({
-                    ...headerStyle(headerBg),
+                    ...headerStyle,
                     tabBarIcon: (props) => getMenuIcon(props, route),
                     tabBarActiveTintColor: activeColor,
                     tabBarInactiveTintColor: inactiveColor,

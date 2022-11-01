@@ -1,6 +1,5 @@
 import React, {FC, useContext, useRef} from "react";
 import {NavScreen} from "../../util/NavScreen";
-import {ScreenWrapper} from "../../util/ScreenWrapper";
 import {Button, Center, Divider, useDisclose, View} from "native-base";
 import {UserProfile} from "./UserProfile";
 import {FlatList} from "react-native";
@@ -63,15 +62,13 @@ export const FriendRequests: FC<NavScreen> = (props) => {
     }
 
     return (
-        <ScreenWrapper>
-            <View>
-                <Center w={"100%"} h={"100%"} padding={5}>
-                    <FlatList style={{width: "100%", flex: 1}} data={friendRequests}
-                              renderItem={({item}) => <UserProfile uid={item} onPress={handleFriendTap} />}
-                              keyExtractor={(item) => item} ItemSeparatorComponent={() => <Divider margin={1} thickness={0} />} />
-                </Center>
-                {getAddFriendDialog()}
-            </View>
-        </ScreenWrapper>
+        <View>
+            <Center w={"100%"} h={"100%"} padding={5}>
+                <FlatList style={{width: "100%", flex: 1}} data={friendRequests}
+                          renderItem={({item}) => <UserProfile uid={item} onPress={handleFriendTap} />}
+                          keyExtractor={(item) => item} ItemSeparatorComponent={() => <Divider margin={1} thickness={0} />} />
+            </Center>
+            {getAddFriendDialog()}
+        </View>
     );
 }

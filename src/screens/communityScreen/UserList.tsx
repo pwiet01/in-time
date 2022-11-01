@@ -1,7 +1,6 @@
 import React, {FC, useContext, useLayoutEffect, useRef} from "react";
 import {NavScreen} from "../../util/NavScreen";
 import {BadgeContext, LangContext, UsersContext} from "../../util/Context";
-import {ScreenWrapper} from "../../util/ScreenWrapper";
 import {Button, Center, Divider, Heading, Icon, useDisclose, View} from "native-base";
 import {UserProfile} from "./UserProfile";
 import {FlatList} from "react-native";
@@ -69,20 +68,18 @@ export const UserList: FC<NavScreen> = (props) => {
     }
 
     return (
-        <ScreenWrapper>
-            <View>
-                <Center w={"100%"} h={"100%"} padding={5}>
-                    <UserProfile uid={getAuth().currentUser.uid} isMe onPress={() => {}} />
-                    <View flexDir={"row"} justifyContent={"space-between"} marginTop={10} marginBottom={5} w={"95%"}>
-                        <Heading>{lang.community.friends}</Heading>
-                        <Button variant={"link"} onPress={() => props.navigation.navigate("leaderboard")}>{lang.community.leaderboard}</Button>
-                    </View>
-                    <FlatList style={{width: "100%", flex: 1}} data={friends}
-                              renderItem={({item}) => <UserProfile uid={item} onPress={handleFriendTap} />}
-                              keyExtractor={(item) => item} ItemSeparatorComponent={() => <Divider margin={1} thickness={0} />} />
-                </Center>
-                {getDeleteFriendDialog()}
-            </View>
-        </ScreenWrapper>
+        <View>
+            <Center w={"100%"} h={"100%"} padding={5}>
+                <UserProfile uid={getAuth().currentUser.uid} isMe onPress={() => {}} />
+                <View flexDir={"row"} justifyContent={"space-between"} marginTop={10} marginBottom={5} w={"95%"}>
+                    <Heading>{lang.community.friends}</Heading>
+                    <Button variant={"link"} onPress={() => props.navigation.navigate("leaderboard")}>{lang.community.leaderboard}</Button>
+                </View>
+                <FlatList style={{width: "100%", flex: 1}} data={friends}
+                          renderItem={({item}) => <UserProfile uid={item} onPress={handleFriendTap} />}
+                          keyExtractor={(item) => item} ItemSeparatorComponent={() => <Divider margin={1} thickness={0} />} />
+            </Center>
+            {getDeleteFriendDialog()}
+        </View>
     );
 }

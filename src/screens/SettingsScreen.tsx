@@ -6,8 +6,6 @@ import {LangContext} from "../util/Context";
 import {protectedAsyncCall} from "../util/Util";
 import {signOut} from "../firebase/Auth";
 import {LanguageSwitch} from "./settingsScreen/LanguageSwitch";
-import {ScreenWrapper} from "../util/ScreenWrapper";
-import {ColorModeSwitch} from "./settingsScreen/ColorModeSwitch";
 import {UserSettings} from "./settingsScreen/UserSettings";
 
 export const SettingsScreen: FC<NavScreen> = (props) => {
@@ -27,24 +25,21 @@ export const SettingsScreen: FC<NavScreen> = (props) => {
 
     const fields = useMemo(() => [
         {key: "uid", comp: <UserSettings w={"100%"} />},
-        {key: "colormode-switch", comp: <ColorModeSwitch w={"100%"} />},
         {key: "lang-switch", comp: <LanguageSwitch w={"100%"} />},
         {key: "signout", comp: <Button w={"100%"} colorScheme={"danger"} onPress={logout.onOpen}>{lang.auth.signout}</Button>}
     ], [lang]);
 
     return (
-        <ScreenWrapper>
-            <Center w={"100%"} h={"100%"} padding={5}>
-                <ScrollView w={"100%"} h={"100%"}>
-                    {fields.map(({key, comp}, index) => (
-                        <View key={key}>
-                            <View w={"100%"} padding={5}>{comp}</View>
-                            {index < fields.length - 1 && <Divider w={"100%"} alignSelf={"center"} />}
-                        </View>
-                    ))}
-                </ScrollView>
-                {getLogoutConfirmDialog()}
-            </Center>
-        </ScreenWrapper>
+        <Center w={"100%"} h={"100%"} padding={5}>
+            <ScrollView w={"100%"} h={"100%"}>
+                {fields.map(({key, comp}, index) => (
+                    <View key={key}>
+                        <View w={"100%"} padding={5}>{comp}</View>
+                        {index < fields.length - 1 && <Divider w={"100%"} alignSelf={"center"} />}
+                    </View>
+                ))}
+            </ScrollView>
+            {getLogoutConfirmDialog()}
+        </Center>
     );
 };
