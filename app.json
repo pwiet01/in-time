@@ -26,6 +26,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#006BA1"
       },
+      "config": {
+        "googleMaps": {
+          "apiKey": "***"
+        }
+      },
       "package": "com.pwietmaier.intime"
     },
     "web": {

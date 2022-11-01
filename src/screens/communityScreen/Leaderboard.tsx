@@ -1,6 +1,5 @@
 import React, {FC, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {NavScreen} from "../../util/NavScreen";
-import {ScreenWrapper} from "../../util/ScreenWrapper";
 import {UsersContext} from "../../util/Context";
 import {Center, ScrollView, Text, useColorModeValue, useContrastText, View} from "native-base";
 import {getRank, getTimeString} from "../../util/UserUtils";
@@ -78,12 +77,10 @@ export const Leaderboard: FC<NavScreen> = (props) => {
     }
 
     return (
-        <ScreenWrapper>
-            <Center w={"100%"} h={"100%"} padding={5}>
-                <ScrollView w={"100%"} h={"100%"}>
-                    {sortedUsers.filter((user) => user != null).map((user, index) => renderUser(user, index + 1))}
-                </ScrollView>
-            </Center>
-        </ScreenWrapper>
+        <Center w={"100%"} h={"100%"} padding={5}>
+            <ScrollView w={"100%"} h={"100%"}>
+                {sortedUsers.filter((user) => user != null).map((user, index) => renderUser(user, index + 1))}
+            </ScrollView>
+        </Center>
     );
 }
