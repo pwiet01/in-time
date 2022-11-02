@@ -14,7 +14,7 @@ export const SignupScreen: FC<NavScreen> = (props) => {
     const [password, setPassword] = useState<string>("");
 
     async function handleSignUp() {
-        await protectedAsyncCall(signUp, {email: email, password: password, displayName: name});
+        await protectedAsyncCall(() => signUp({email: email, password: password, displayName: name}));
     }
 
     return (

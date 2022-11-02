@@ -32,13 +32,18 @@ export async function setStorageValue(key: string, value: string): Promise<void>
     } catch (e) {}
 }
 
-export async function protectedAsyncCall(target: (...args: any[]) => Promise<any>, ...args: any[]): Promise<any> {
+export async function protectedAsyncCall(target: () => Promise<any>, errMsg?: string, successMsg?: string): Promise<{success: boolean, data: any}> {
     try {
-        return await target(...args);
+        const result = await target();
+        if (successMsg) {
+            Toast.show({description: successMsg});
+        }
+
+        return {success: true, data: result};
     } catch (e) {
         console.log(e);
-        Toast.show({description: e.code});
+        Toast.show({description: errMsg || e.toString()});
     }
 
-    return null;
+    return {success: false, data: null};
 }

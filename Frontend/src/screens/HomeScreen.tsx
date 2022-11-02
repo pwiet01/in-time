@@ -53,7 +53,7 @@ export const HomeScreen: FC<NavScreen> = (props) => {
                              longitudeDelta: 0.01
                          }}
                 >
-                    <Marker coordinate={location.coords} title={"LOL"} description={"Mashallah"} />
+                    {location && <Marker coordinate={location.coords} title={"LOL"} description={"Mashallah"} />}
                 </MapView>
             </Center>
         );

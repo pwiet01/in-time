@@ -18,23 +18,17 @@ export const SearchUser: FC<NavScreen> = (props) => {
     const toast = useToast();
 
     async function handleSearch() {
-        const user = await protectedAsyncCall(getUser, uid);
-        if (user != null) {
-            setUser(user);
+        const user = await protectedAsyncCall(() => getUser(uid));
+        if (user.success) {
+            setUser(user.data);
         }
     }
 
     async function handleAdd() {
-        try {
-            if (user.uid === getAuth().currentUser.uid) {
-                toast.show({description: lang.community.itsYou});
-            } else {
-                await addFriend(user.uid);
-                toast.show({description: lang.community.requestSent});
-            }
-        } catch (e) {
-            console.log(e);
-            toast.show({description: e.code});
+        if (user.uid === getAuth().currentUser.uid) {
+            toast.show({description: lang.community.itsYou});
+        } else {
+            await protectedAsyncCall(() => addFriend(user.uid), null, lang.community.requestSent);
         }
     }
 

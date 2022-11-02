@@ -62,7 +62,7 @@ export const UserList: FC<NavScreen> = (props) => {
         return <StandardDialog title={lang.dialog.confirmAction} message={lang.community.friendWillBeDeleted(displayName)}
                                isOpen={deleteFriendDialog.isOpen} onClose={deleteFriendDialog.onClose}
                                onAccept={async () => {
-                                   await protectedAsyncCall(deleteFriend, uid);
+                                   await protectedAsyncCall(() => deleteFriend(uid));
                                    deleteFriendDialog.onClose();
                                }} />
     }

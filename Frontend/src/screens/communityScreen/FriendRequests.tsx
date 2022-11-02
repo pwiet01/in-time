@@ -41,14 +41,14 @@ export const FriendRequests: FC<NavScreen> = (props) => {
 
         const customButtons = (
             <Button.Group space={2}>
-                <Button colorScheme="danger" onPress={async () => {
-                    await protectedAsyncCall(rejectRequest, uid);
+                <AsyncButton colorScheme="danger" onPress={async () => {
+                    await protectedAsyncCall(() => rejectRequest(uid));
                     addFriendDialog.onClose();
                 }}>
                     {lang.community.reject}
-                </Button>
+                </AsyncButton>
                 <AsyncButton colorScheme="primary" onPress={async () => {
-                    await protectedAsyncCall(acceptRequest, uid);
+                    await protectedAsyncCall(() => acceptRequest(uid));
                     addFriendDialog.onClose();
                 }}>
                     {lang.community.accept}

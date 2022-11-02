@@ -13,7 +13,7 @@ export const LoginScreen: FC<NavScreen> = (props) => {
     const [password, setPassword] = useState<string>("");
 
     async function handleSignIn() {
-        await protectedAsyncCall(signIn, {email: email, password: password});
+        await protectedAsyncCall(() => signIn({email: email, password: password}));
     }
 
     return (
