@@ -5,11 +5,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function getLang(id: string): {key: string, lang: any} {
     switch (id) {
-        case "en":
-            return {key: "en", lang: langEN};
         case "de":
-        default:
             return {key: "de", lang: langDE};
+        case "en":
+        default:
+            return {key: "en", lang: langEN};
     }
 }
 

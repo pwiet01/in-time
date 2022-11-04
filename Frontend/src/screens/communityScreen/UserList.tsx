@@ -1,6 +1,6 @@
-import React, {FC, useContext, useLayoutEffect, useRef} from "react";
+import React, {FC, useContext, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {NavScreen} from "../../util/NavScreen";
-import {BadgeContext, LangContext, UsersContext} from "../../util/Context";
+import {FriendRequestsContext, LangContext} from "../../util/Context";
 import {Button, Center, Divider, Heading, Icon, useDisclose, View} from "native-base";
 import {UserProfile} from "./UserProfile";
 import {FlatList} from "react-native";
@@ -11,27 +11,37 @@ import {deleteFriend} from "../../firebase/Users";
 import {protectedAsyncCall} from "../../util/Util";
 import {Entypo, Feather} from "@expo/vector-icons";
 import {BadgedElement} from "../../util/BadgedElement";
+import {getDatabase, onValue, ref} from "firebase/database";
 
 export const UserList: FC<NavScreen> = (props) => {
     const {lang} = useContext(LangContext);
-    const {friends} = useContext(UsersContext);
-    const {friendRequests} = useContext(BadgeContext);
+    const {friendRequests} = useContext(FriendRequestsContext);
 
     const selectedFriend = useRef<CustomUser | string>(null);
     const deleteFriendDialog = useDisclose();
 
+    const [friends, setFriends] = useState<string[]>([]);
+
+    useEffect(() => {
+        const userRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/friends");
+        return onValue(userRef, (snapshot) => {
+            const value = snapshot.val();
+            setFriends(value ? Object.keys(value) : []);
+        });
+    }, []);
+
     useLayoutEffect(() => {
         props.navigation.setOptions({
             headerRight: () => (
-                <View flexDir={"row"}>
-                    <Button colorScheme={"transparent"} onPress={() => props.navigation.navigate("search-user")} marginRight={2}>
-                        <Icon as={Entypo} name={"magnifying-glass"} color={"white"} size={"lg"} />
-                    </Button>
+                <View flexDir={"row"} alignItems={"center"}>
                     <BadgedElement text={friendRequests.length > 0 ? friendRequests.length.toString() : null} color={"red"}>
                         <Button colorScheme={"transparent"} onPress={() => props.navigation.navigate("friend-requests")}>
                             <Icon as={Feather} name={"info"} color={"white"} size={"lg"} />
                         </Button>
                     </BadgedElement>
+                    <Button colorScheme={"transparent"} onPress={() => props.navigation.navigate("search-user")} marginRight={2}>
+                        <Icon as={Entypo} name={"magnifying-glass"} color={"white"} size={"lg"} />
+                    </Button>
                 </View>
             )
         });
@@ -59,7 +69,7 @@ export const UserList: FC<NavScreen> = (props) => {
             displayName = selectedFriend.current.displayName;
         }
 
-        return <StandardDialog title={lang.dialog.confirmAction} message={lang.community.friendWillBeDeleted(displayName)}
+        return <StandardDialog title={lang.dialog.confirmAction} content={lang.community.friendWillBeDeleted(displayName)}
                                isOpen={deleteFriendDialog.isOpen} onClose={deleteFriendDialog.onClose}
                                onAccept={async () => {
                                    await protectedAsyncCall(() => deleteFriend(uid));
@@ -71,10 +81,7 @@ export const UserList: FC<NavScreen> = (props) => {
         <View>
             <Center w={"100%"} h={"100%"} padding={5}>
                 <UserProfile uid={getAuth().currentUser.uid} isMe onPress={() => {}} />
-                <View flexDir={"row"} justifyContent={"space-between"} marginTop={10} marginBottom={5} w={"95%"}>
-                    <Heading>{lang.community.friends}</Heading>
-                    <Button variant={"link"} onPress={() => props.navigation.navigate("leaderboard")}>{lang.community.leaderboard}</Button>
-                </View>
+                <Heading marginTop={10} marginBottom={5} alignSelf={"flex-start"}>{lang.community.friends}</Heading>
                 <FlatList style={{width: "100%", flex: 1}} data={friends}
                           renderItem={({item}) => <UserProfile uid={item} onPress={handleFriendTap} />}
                           keyExtractor={(item) => item} ItemSeparatorComponent={() => <Divider margin={1} thickness={0} />} />

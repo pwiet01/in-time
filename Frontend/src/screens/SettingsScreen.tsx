@@ -18,7 +18,7 @@ export const SettingsScreen: FC<NavScreen> = (props) => {
         }
 
         return (
-            <StandardDialog title={lang.dialog.confirmAction} message={lang.auth.youWillBeLoggedOut}
+            <StandardDialog title={lang.dialog.confirmAction} content={lang.auth.youWillBeLoggedOut}
                             isOpen={logout.isOpen} onAccept={onAccept} onClose={logout.onClose} />
         );
     }

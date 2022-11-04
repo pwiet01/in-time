@@ -7,7 +7,7 @@ export const lang = {
     screens: {
         login: "Login",
         signup: "Sign Up",
-        home: "Home",
+        home: "Events",
         community: "Community",
         settings: "Settings"
     },
@@ -45,7 +45,7 @@ export const lang = {
         itsYou: "It's you!"
     },
     home: {
-        events: "Events"
+
     },
     hints: {
         currentlyOffline: "You are offline!"

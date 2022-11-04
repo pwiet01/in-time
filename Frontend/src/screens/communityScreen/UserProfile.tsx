@@ -11,27 +11,16 @@ interface UserProfileProps {
 
 export const UserProfile: FC<UserProfileProps> = (props) => {
     const [user, setUser] = useState<CustomUser>(null);
-    const [isOnline, setIsOnline] = useState(false);
 
     useEffect(() => {
         const db = getDatabase();
         const userRef = ref(db, "users/" + props.uid + "/general");
-        const onlineRef = ref(db, "users/" + props.uid + "/isOnline");
 
-        const unsubscribeGeneral = onValue(userRef, (snapshot) => {
+        return onValue(userRef, (snapshot) => {
             const value = snapshot.val();
             setUser(value ? {...value, uid: props.uid} : null);
         });
-
-        const unsubscribeOnline = onValue(onlineRef, (snapshot) => {
-            setIsOnline(snapshot.val() || false);
-        });
-
-        return () => {
-            unsubscribeGeneral();
-            unsubscribeOnline();
-        };
     }, []);
 
-    return <UserProfileStatic user={user} onPress={(user) => props.onPress(user || props.uid)} isMe={props.isMe} isOnline={isOnline} />;
+    return <UserProfileStatic user={user} onPress={(user) => props.onPress(user || props.uid)} isMe={props.isMe} />;
 }

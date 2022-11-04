@@ -31,7 +31,8 @@
           "apiKey": "***"
         }
       },
-      "package": "com.pwietmaier.intime"
+      "package": "com.pwietmaier.intime",
+      "permissions": ["ACCESS_BACKGROUND_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

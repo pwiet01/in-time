@@ -8,6 +8,9 @@ import {SignupScreen} from "./SignupScreen";
 import {User, onAuthStateChanged, getAuth} from "firebase/auth";
 import {LangContext} from "../../util/Context";
 import {Center, Spinner, useColorModeValue} from "native-base";
+import moment from "moment";
+import "moment/locale/de";
+import * as Localization from "expo-localization";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,11 +22,14 @@ export const Root: FC = (_) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        const locale = Localization.locale.split("-")[0];
+
         async function loadLanguage() {
-            setLang(getLang(await getStorageValue("@language")));
+            setLang(getLang(await getStorageValue("@language") || locale));
         }
 
         loadLanguage();
+        moment.locale(locale);
 
         return onAuthStateChanged(getAuth(), (user) => {
             if (user) {

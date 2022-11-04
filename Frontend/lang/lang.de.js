@@ -7,7 +7,7 @@ export const lang = {
     screens: {
         login: "Anmelden",
         signup: "Registrieren",
-        home: "Start",
+        home: "Ereignisse",
         community: "Community",
         settings: "Einstellungen"
     },
@@ -20,7 +20,11 @@ export const lang = {
         newAccount: "Neu hier?",
         youWillBeLoggedOut: "Du wirst ausgeloggt!",
         displayName: "Name",
-        specifyName: "Gib einen Namen ein!"
+        photoURL: "Bild URL",
+        specifyName: "Gib einen Namen ein!",
+        editName: "Namen bearbeiten",
+        editPhoto: "Profilbild bearbeiten",
+        mustBeValidURL: "Gib eine valide URL ein!"
     },
     dialog: {
         accept: "OK",
@@ -47,7 +51,32 @@ export const lang = {
         itsYou: "Das bist du!"
     },
     home: {
-        events: "Ereignisse"
+        newEvent: "Neues Ereignis",
+        selectLocation: "Ort auswählen",
+        createEvent: "Ereignis erstellen",
+        specifyTitle: "Gib einen Titel ein!",
+        invalidEventTime: "Darf frühestens in 20 Minuten sein!",
+        eventTitle: "Titel",
+        eventCreated: "Ereignis erstellt!",
+        event: "Ereignis",
+        participants: "Teilnehmer",
+        invited: "Eingeladen",
+        location: "Ort",
+        eventStatus: {
+            0: "Anstehend",
+            1: "Treffen in",
+            2: "Verspätung",
+            3: "Angekommen"
+        },
+        inviteUsers: "Freunde einladen",
+        changesSaved: "Änderungen gespeichert!",
+        eventInvitations: "Einladungen",
+        inviteAccepted: "Einladung angenommen!",
+        inviteRejected: "Einladung abgelehnt!",
+        removeParticipantTitle: "Teilnehmer entfernen",
+        removeParticipant: (name) => `${name} aus diesem Ereignis entfernen?`,
+        leaveEventTitle: "Ereignis verlassen",
+        leaveEvent: "Dieses Ereignis verlassen?"
     },
     hints: {
         currentlyOffline: "Du bist offline!"

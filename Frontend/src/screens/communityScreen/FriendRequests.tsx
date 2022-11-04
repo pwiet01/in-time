@@ -3,7 +3,7 @@ import {NavScreen} from "../../util/NavScreen";
 import {Button, Center, Divider, useDisclose, View} from "native-base";
 import {UserProfile} from "./UserProfile";
 import {FlatList} from "react-native";
-import {BadgeContext, LangContext} from "../../util/Context";
+import {FriendRequestsContext, LangContext} from "../../util/Context";
 import {CustomUser} from "../../util/CustomUser";
 import {StandardDialog} from "../../util/StandardDialog";
 import {protectedAsyncCall} from "../../util/Util";
@@ -12,7 +12,7 @@ import {AsyncButton} from "../../util/AsyncButton";
 
 export const FriendRequests: FC<NavScreen> = (props) => {
     const {lang} = useContext(LangContext);
-    const {friendRequests} = useContext(BadgeContext);
+    const {friendRequests} = useContext(FriendRequestsContext);
     const addFriendDialog = useDisclose();
 
     const selectedFriend = useRef<CustomUser | string>(null);
@@ -56,7 +56,7 @@ export const FriendRequests: FC<NavScreen> = (props) => {
             </Button.Group>
         );
 
-        return <StandardDialog title={lang.community.friendRequest} message={lang.community.friendRequestDialogMsg(displayName)}
+        return <StandardDialog title={lang.community.friendRequest} content={lang.community.friendRequestDialogMsg(displayName)}
                                isOpen={addFriendDialog.isOpen} onClose={addFriendDialog.onClose}
                                customButtonGroup={customButtons} />
     }

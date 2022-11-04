@@ -1,5 +1,5 @@
-import {getDatabase, ref, get} from "firebase/database";
-import {getAuth} from "firebase/auth";
+import {getDatabase, ref, get, set} from "firebase/database";
+import {getAuth, updateProfile} from "firebase/auth";
 import {CustomUser} from "../util/CustomUser";
 import {axiosInstance} from "../util/AxiosInstance";
 
@@ -40,4 +40,16 @@ export async function getUser(uid: string): Promise<CustomUser> {
         uid: uid,
         displayName: dbEntry.displayName || uid
     };
+}
+
+export async function updateDisplayName(displayName: string) {
+    const me = getAuth().currentUser;
+    await set(ref(getDatabase(), "users/" + me.uid + "/general/displayName"), displayName);
+    await updateProfile(me, {displayName: displayName});
+}
+
+export async function updatePhotoURL(photoURL: string) {
+    const me = getAuth().currentUser;
+    await set(ref(getDatabase(), "users/" + me.uid + "/general/photoURL"), photoURL);
+    await updateProfile(me, {photoURL: photoURL});
 }
