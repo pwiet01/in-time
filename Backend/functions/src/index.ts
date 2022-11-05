@@ -100,7 +100,7 @@ export const createEvent = functions.region("europe-west1").https.onRequest(asyn
         });
 
         await admin.database().ref("users/" + uid + "/events/" + eventRef.key).set(true);
-        res.send("Success");
+        res.send(eventRef.key);
     } catch (e) {
         console.log(e);
         res.status(500).send("Request failed");

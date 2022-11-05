@@ -7,20 +7,36 @@ import {headerStyle, tabBarStyle} from "../../style/theme";
 import {CommunityScreen} from "../CommunityScreen";
 import {HomeScreen} from "../HomeScreen";
 import {SettingsScreen} from "../SettingsScreen";
-import {getDatabase, onValue, ref} from "firebase/database";
+import {getDatabase, onValue, ref, set} from "firebase/database";
 import {getAuth} from "firebase/auth";
 import {BadgeColor, BadgedElement} from "../../util/BadgedElement";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import {getDistanceFromLatLon, getStorageEvents, removeStorageEvent, setStorageValue} from "../../util/Util";
+import {LatLng} from "react-native-maps";
+import {eventConfig} from "../../util/InTimeEvent";
+
+async function checkEvents(myCoords: LatLng) {
+    for (const [id, {time, location}] of Object.entries(await getStorageEvents())) {
+        if (Date.now() - time > eventConfig.earliestArrival &&
+            getDistanceFromLatLon(myCoords.latitude, myCoords.longitude, location.latitude, location.longitude) < 100) {
+
+            try {
+                await set(ref(getDatabase(), "events/" + id + "/participants/" + getAuth().currentUser.uid + "/arrivalTime"), Date.now());
+                removeStorageEvent(id);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    }
+}
 
 TaskManager.defineTask("BACKGROUND_LOCATION_TASK", ({ data, error }) => {
     if (error) {
         return;
     }
 
-    const coords = data["locations"][0]["coords"];
-    console.log(coords["latitude"]);
-    console.log(coords["longitude"]);
+    checkEvents(data["locations"][0]["coords"]);
 });
 
 const Tab = createBottomTabNavigator();

@@ -78,6 +78,6 @@ export const NewEventDialog: FC<NewEventDialogProps> = (props) => {
     }
 
     return <StandardDialog title={lang.home.createEvent} content={getContent()} isOpen={props.isOpen} onClose={props.onClose}
-                           acceptDisabled={title.trim().length === 0 || date.getTime() - new Date().getTime() < eventConfig.earliestNewEvent}
+                           acceptDisabled={title.trim().length === 0}
                            onAccept={addEvent} />
 }

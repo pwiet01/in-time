@@ -43,7 +43,7 @@ export const EventScreen: FC<NavScreen> = (props) => {
 
     useLayoutEffect(() => {
         async function handleInvitationAccept() {
-            if ((await protectedAsyncCall(() => acceptEventInvite(props.route.params.id), null, lang.home.inviteAccepted))) {
+            if ((await protectedAsyncCall(() => acceptEventInvite(event), null, lang.home.inviteAccepted))) {
                 props.navigation.goBack();
             }
         }
@@ -56,23 +56,25 @@ export const EventScreen: FC<NavScreen> = (props) => {
 
         props.navigation.setOptions({
             headerRight: () => {
-                if (props.route.params.isInvite) {
-                    return (
-                        <View flexDir={"row"} alignItems={"center"}>
-                            <Button colorScheme={"transparent"} onPress={handleInvitationAccept}>
-                                <Icon as={MaterialCommunityIcons} name={"check"} color={"white"} size={"lg"}/>
+                if (event) {
+                    if (props.route.params.isInvite) {
+                        return (
+                            <View flexDir={"row"} alignItems={"center"}>
+                                <Button colorScheme={"transparent"} onPress={handleInvitationAccept}>
+                                    <Icon as={MaterialCommunityIcons} name={"check"} color={"white"} size={"lg"}/>
+                                </Button>
+                                <Button colorScheme={"transparent"} onPress={handleInvitationReject} marginRight={2}>
+                                    <Icon as={MaterialCommunityIcons} name={"close"} color={"white"} size={"lg"}/>
+                                </Button>
+                            </View>
+                        );
+                    } else {
+                        return adminAccess || !editAllowed ?
+                            <></> :
+                            <Button colorScheme={"transparent"} onPress={leaveDialog.onOpen} marginRight={2}>
+                                <Icon as={MaterialCommunityIcons} name={"logout"} color={"white"} size={"lg"}/>
                             </Button>
-                            <Button colorScheme={"transparent"} onPress={handleInvitationReject} marginRight={2}>
-                                <Icon as={MaterialCommunityIcons} name={"close"} color={"white"} size={"lg"}/>
-                            </Button>
-                        </View>
-                    );
-                } else {
-                    return adminAccess || !editAllowed ?
-                        <></> :
-                        <Button colorScheme={"transparent"} onPress={leaveDialog.onOpen} marginRight={2}>
-                            <Icon as={MaterialCommunityIcons} name={"logout"} color={"white"} size={"lg"}/>
-                        </Button>
+                    }
                 }
             }
         });
@@ -132,7 +134,7 @@ export const EventScreen: FC<NavScreen> = (props) => {
                                isOpen={removeParticipantDialog.isOpen} onClose={removeParticipantDialog.onClose}
                                onAccept={async () => {
                                    if ((await protectedAsyncCall(() =>
-                                       removeEventParticipant(props.route.params.id, selectedUser.current.uid))).success)
+                                       removeEventParticipant(event, selectedUser.current.uid))).success)
                                        removeParticipantDialog.onClose();
                                }}/>
     }
@@ -143,7 +145,7 @@ export const EventScreen: FC<NavScreen> = (props) => {
                                isOpen={leaveDialog.isOpen} onClose={leaveDialog.onClose}
                                onAccept={async () => {
                                    if ((await protectedAsyncCall(() =>
-                                       removeEventParticipant(props.route.params.id, getAuth().currentUser.uid))).success) {
+                                       removeEventParticipant(event, getAuth().currentUser.uid))).success) {
                                        removeParticipantDialog.onClose();
                                        props.navigation.goBack();
                                    }

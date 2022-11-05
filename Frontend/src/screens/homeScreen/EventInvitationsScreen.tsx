@@ -1,14 +1,9 @@
-import React, {FC, useContext, useRef} from "react";
+import React, {FC, useContext} from "react";
 import {NavScreen} from "../../util/NavScreen";
-import {EventInvitationsContext, LangContext} from "../../util/Context";
-import {Button, Center, Divider, useDisclose, View} from "native-base";
+import {EventInvitationsContext} from "../../util/Context";
+import {Center, Divider} from "native-base";
 import {FlatList} from "react-native";
 import {EventItem} from "./EventItem";
-import {AsyncButton} from "../../util/AsyncButton";
-import {protectedAsyncCall} from "../../util/Util";
-import {StandardDialog} from "../../util/StandardDialog";
-import {InTimeEventGeneralInfo} from "../../util/InTimeEvent";
-import {acceptEventInvite, rejectEventInvite} from "../../firebase/Events";
 
 export const EventInvitationsScreen: FC<NavScreen> = (props) => {
     const {eventInvitations} = useContext(EventInvitationsContext);
