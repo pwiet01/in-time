@@ -14,11 +14,9 @@ interface EventItemStaticProps {
 
 export const EventItemStatic: FC<EventItemStaticProps> = (props) => {
     const bgColor = useColorModeValue("coolGray.200", "blueGray.600");
-    const statusBgColor = useColorModeValue("coolGray.100", "blueGray.700");
-
     const {lang} = useContext(LangContext);
 
-    const [status, setStatus] = useState<{status: number, time: number}>(getStatus(props.event?.time, null));
+    const [status, setStatus] = useState<{status: number, time: number}>(getStatus(props.event?.time, props.arrivalTime));
 
     useEffect(() => {
         const timerId = setInterval(() => setStatus(getStatus(props.event?.time, props.arrivalTime)), 1000);

@@ -28,7 +28,7 @@ export const acceptFriendRequest = functions.region("europe-west1").https.onRequ
     const {me, other} = req.body;
 
     try {
-        if ((await admin.database().ref("users/" + other + "/friendRequests/" + me).get()).val() !== true) {
+        if ((await admin.database().ref("users/" + me + "/friendRequests/" + other).get()).val() !== true) {
             res.status(500).send("No request from this person!");
             return;
         }
@@ -84,14 +84,16 @@ export const deleteFriend = functions.region("europe-west1").https.onRequest(asy
 });
 
 export const createEvent = functions.region("europe-west1").https.onRequest(async (req, res) => {
-    const {uid, general, location} = req.body;
+    const {uid, event} = req.body;
 
     try {
         const eventRef = admin.database().ref("events/").push();
         await eventRef.set({
-            admin: uid,
-            general: general,
-            location: location,
+            ...event,
+            general: {
+                ...event.general,
+                admin: uid
+            },
             participants: {
                 [uid]: {
                     accepted: true
@@ -126,14 +128,14 @@ export const setEventInvitations = functions.region("europe-west1").https.onRequ
         for (const uid of uids) {
             if (!currentInvitations.has(uid)) {
                 updates["events/" + eventId + "/participants/" + uid] = {accepted: false};
-                updates["users/" + uid + "/events/" + eventId] = false;
+                updates["users/" + uid + "/eventInvitations/" + eventId] = true;
             }
         }
 
         for (const uid of currentInvitations) {
             if (!uids.has(uid)) {
                 updates["events/" + eventId + "/participants/" + uid] = null;
-                updates["users/" + uid + "/events/" + eventId] = null;
+                updates["users/" + uid + "/eventInvitations/" + eventId] = null;
             }
         }
 
@@ -158,6 +160,7 @@ export const acceptEventInvite = functions.region("europe-west1").https.onReques
 
         updates["events/" + eventId + "/participants/" + uid] = {accepted: true};
         updates["users/" + uid + "/events/" + eventId] = true;
+        updates["users/" + uid + "/eventInvitations/" + eventId] = null;
 
         await admin.database().ref().update(updates);
         res.send("Success");
@@ -174,7 +177,7 @@ export const rejectEventInvite = functions.region("europe-west1").https.onReques
         const updates = {};
 
         updates["events/" + eventId + "/participants/" + uid] = null;
-        updates["users/" + uid + "/events/" + eventId] = null;
+        updates["users/" + uid + "/eventInvitations/" + eventId] = null;
 
         await admin.database().ref().update(updates);
         res.send("Success");
@@ -186,15 +189,47 @@ export const rejectEventInvite = functions.region("europe-west1").https.onReques
 
 export const onParticipantArrival = functions.region("europe-west1").database.ref("events/{eventId}/participants/{uid}/arrivalTime")
     .onCreate(async (snapshot, context) => {
+        const eventRef = admin.database().ref("events/" + context.params.eventId);
         const arrivalTime = snapshot.val();
-        const eventTime = (await admin.database().ref("events/" + context.params.eventId + "/general/time").get()).val();
+        const event = (await eventRef.get()).val();
+        const eventTime = event.general.time;
         const diff = arrivalTime - eventTime;
 
         if (diff > 0) {
+            const userTimeRef = admin.database().ref("users/" + context.params.uid + "/general/time");
             const seconds = Math.floor(diff / 1000);
-            const currentTime = (await admin.database().ref("users/" + context.params.uid + "/general/time").get()).val();
-            await admin.database().ref("users/" + context.params.uid + "/general/time").set(currentTime + seconds);
+            const currentTime = (await userTimeRef.get()).val();
+            await userTimeRef.set(currentTime + seconds);
         }
+
+        if (!event.general.closed) {
+            const participants: {[uid: string]: any} = event.participants;
+            if (Object.values(participants).findIndex((user) => !user.hasOwnProperty("arrivalTime") && user.accepted) === -1) {
+                await eventRef.child("general/closed").set(true);
+            }
+        }
+    });
+
+export const onEventClosed = functions.region("europe-west1").database.ref("events/{eventId}/general/closed")
+    .onCreate(async (snapshot, context) => {
+        const eventRef = admin.database().ref("events/" + context.params.eventId + "/participants");
+        const eventParticipants: {[uid: string]: any} = (await eventRef.get()).val();
+
+        const updates = {};
+        const now = Date.now();
+        for (const [uid, info] of Object.entries(eventParticipants)) {
+            if (info.accepted) {
+                if (!info.hasOwnProperty("arrivalTime")) {
+                    updates["events/" + context.params.eventId + "/participants/" + uid + "/arrivalTime"] = now;
+                }
+
+                updates["users/" + uid + "/events/" + context.params.eventId] = false;
+            } else {
+                updates["users/" + uid + "/eventInvitations/" + context.params.eventId] = null;
+            }
+        }
+
+        await admin.database().ref().update(updates);
     });
 
 export const onEventDeletion = functions.region("europe-west1").database.ref("events/{eventId}")
@@ -204,6 +239,7 @@ export const onEventDeletion = functions.region("europe-west1").database.ref("ev
         const updates = {};
         for (const user of participants) {
             updates["users/" + user + "/events/" + context.params.eventId] = null;
+            updates["users/" + user + "/eventInvitations/" + context.params.eventId] = null;
         }
 
         return admin.database().ref().update(updates);

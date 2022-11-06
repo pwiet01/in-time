@@ -32,7 +32,7 @@
         }
       },
       "package": "com.pwietmaier.intime",
-      "permissions": ["ACCESS_BACKGROUND_LOCATION"]
+      "permissions": ["ACCESS_BACKGROUND_LOCATION", "SCHEDULE_EXACT_ALARM"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,4 +1,4 @@
-import React, {FC, useContext, useEffect, useLayoutEffect, useRef, useState} from "react";
+import React, {FC, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {NavScreen} from "../../util/NavScreen";
 import {FriendRequestsContext, LangContext} from "../../util/Context";
 import {Button, Center, Divider, Heading, Icon, useDisclose, View} from "native-base";
@@ -9,9 +9,9 @@ import {StandardDialog} from "../../util/StandardDialog";
 import {CustomUser} from "../../util/CustomUser";
 import {deleteFriend} from "../../firebase/Users";
 import {protectedAsyncCall} from "../../util/Util";
-import {Entypo, Feather} from "@expo/vector-icons";
+import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {BadgedElement} from "../../util/BadgedElement";
-import {getDatabase, onValue, ref} from "firebase/database";
+import {child, getDatabase, onValue, ref} from "firebase/database";
 
 export const UserList: FC<NavScreen> = (props) => {
     const {lang} = useContext(LangContext);
@@ -20,27 +20,53 @@ export const UserList: FC<NavScreen> = (props) => {
     const selectedFriend = useRef<CustomUser | string>(null);
     const deleteFriendDialog = useDisclose();
 
-    const [friends, setFriends] = useState<string[]>([]);
+    const [friendIds, setFriendIds] = useState<string[]>([]);
+    const [friends, setFriends] = useState<{[id: string]: CustomUser}>({});
+    const [friendsSorted, setFriendsSorted] = useState<CustomUser[]>([]);
 
     useEffect(() => {
         const userRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/friends");
         return onValue(userRef, (snapshot) => {
             const value = snapshot.val();
-            setFriends(value ? Object.keys(value) : []);
+            setFriendIds(value ? Object.keys(value) : []);
         });
     }, []);
+
+    useEffect(() => {
+        if (friendIds) {
+            setFriends({});
+            const friendsRef = ref(getDatabase(), "users");
+            const unsubscribeList = friendIds.map(friendId => onValue(child(friendsRef, friendId + "/general"), snapshot => {
+                const value = snapshot.val();
+                setFriends(prev => ({...prev, [friendId]: {...value, uid: friendId}}));
+            }));
+
+            return () => unsubscribeList.forEach(unsub => unsub());
+        }
+    }, [friendIds]);
+
+    useEffect(() => {
+        if (friends && Object.keys(friends).length === friendIds.length) {
+            const sortedFriends = Object.values(friends);
+            sortedFriends.sort((a, b) => b.time - a.time);
+            setFriendsSorted(sortedFriends);
+        }
+    }, [friends]);
 
     useLayoutEffect(() => {
         props.navigation.setOptions({
             headerRight: () => (
                 <View flexDir={"row"} alignItems={"center"}>
-                    <BadgedElement text={friendRequests.length > 0 ? friendRequests.length.toString() : null} color={"red"}>
-                        <Button colorScheme={"transparent"} onPress={() => props.navigation.navigate("friend-requests")}>
-                            <Icon as={Feather} name={"info"} color={"white"} size={"lg"} />
-                        </Button>
-                    </BadgedElement>
+                    {
+                        friendRequests.length > 0 &&
+                        <BadgedElement text={friendRequests.length.toString()} color={"red"}>
+                            <Button colorScheme={"transparent"} onPress={() => props.navigation.navigate("friend-requests")}>
+                                <Icon as={MaterialCommunityIcons} name={"email"} color={"white"} size={"lg"} />
+                            </Button>
+                        </BadgedElement>
+                    }
                     <Button colorScheme={"transparent"} onPress={() => props.navigation.navigate("search-user")} marginRight={2}>
-                        <Icon as={Entypo} name={"magnifying-glass"} color={"white"} size={"lg"} />
+                        <Icon as={MaterialCommunityIcons} name={"account-plus"} color={"white"} size={"lg"} />
                     </Button>
                 </View>
             )
@@ -77,16 +103,20 @@ export const UserList: FC<NavScreen> = (props) => {
                                }} />
     }
 
-    return (
-        <View>
-            <Center w={"100%"} h={"100%"} padding={5}>
-                <UserProfile uid={getAuth().currentUser.uid} isMe onPress={() => {}} />
-                <Heading marginTop={10} marginBottom={5} alignSelf={"flex-start"}>{lang.community.friends}</Heading>
-                <FlatList style={{width: "100%", flex: 1}} data={friends}
-                          renderItem={({item}) => <UserProfile uid={item} onPress={handleFriendTap} />}
-                          keyExtractor={(item) => item} ItemSeparatorComponent={() => <Divider margin={1} thickness={0} />} />
-            </Center>
-            {getDeleteFriendDialog()}
-        </View>
-    );
+    return useMemo(() => {
+        return (
+            <View>
+                <Center w={"100%"} h={"100%"} padding={5}>
+                    <UserProfile uid={getAuth().currentUser.uid} isMe onPress={() => {
+                    }}/>
+                    <Heading marginTop={10} marginBottom={3} alignSelf={"flex-start"}>{lang.community.friends}</Heading>
+                    <FlatList style={{width: "100%", flex: 1}} data={friendsSorted}
+                              renderItem={({item}) => <UserProfile user={item} onPress={handleFriendTap}/>}
+                              keyExtractor={(item) => item.uid}
+                              ItemSeparatorComponent={() => <Divider margin={1} thickness={0}/>}/>
+                </Center>
+                {getDeleteFriendDialog()}
+            </View>
+        );
+    }, [friendsSorted, lang, deleteFriendDialog.isOpen]);
 }

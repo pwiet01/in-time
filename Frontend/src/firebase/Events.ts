@@ -1,15 +1,11 @@
 import {InTimeEvent} from "../util/InTimeEvent";
 import {axiosInstance} from "../util/AxiosInstance";
 import {getAuth} from "firebase/auth";
-import {addStorageEvent, removeStorageEvent} from "../util/Util";
+import {getDatabase, ref, remove, set} from "firebase/database";
+import {addStorageEvent} from "../util/Util";
 
 export async function createEvent(event: InTimeEvent): Promise<void> {
-    const res = await axiosInstance.post("createEvent", {
-        uid: getAuth().currentUser.uid,
-        ...event
-    });
-
-    addStorageEvent({...event, general: {...event.general, id: res.data}});
+    await axiosInstance.post("createEvent", {uid: getAuth().currentUser.uid, event: event});
 }
 
 export async function setEventInvitations(eventId: string, uids: string[]) {
@@ -25,7 +21,7 @@ export async function acceptEventInvite(event: InTimeEvent) {
         uid: getAuth().currentUser.uid
     });
 
-    addStorageEvent(event);
+    addStorageEvent(event.general);
 }
 
 export async function rejectEventInvite(eventId: string) {
@@ -40,6 +36,23 @@ export async function removeEventParticipant(event: InTimeEvent, uid: string) {
         eventId: event.general.id,
         uid: uid
     });
+}
 
-    removeStorageEvent(event.general.id);
+export async function leaveEvent(event: InTimeEvent) {
+    await axiosInstance.post("rejectEventInvite", {
+        eventId: event.general.id,
+        uid: getAuth().currentUser.uid
+    });
+}
+
+export async function closeEvent(id: string) {
+    await set(ref(getDatabase(), "events/" + id + "/general/closed"), true);
+}
+
+export async function deleteEvent(id: string) {
+    await remove(ref(getDatabase(), "events/" + id));
+}
+
+export async function removeClosedEvent(id: string) {
+    await remove(ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events/" + id));
 }

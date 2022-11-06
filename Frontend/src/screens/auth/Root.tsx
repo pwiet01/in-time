@@ -7,10 +7,11 @@ import {getLang, getStorageValue, setStorageValue} from "../../util/Util";
 import {SignupScreen} from "./SignupScreen";
 import {User, onAuthStateChanged, getAuth} from "firebase/auth";
 import {LangContext} from "../../util/Context";
-import {Center, Spinner, useColorModeValue} from "native-base";
+import {Center, Spinner, Text, useColorModeValue} from "native-base";
 import moment from "moment";
 import "moment/locale/de";
 import * as Localization from "expo-localization";
+import {getDatabase, onValue, ref} from "firebase/database";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,8 @@ export const Root: FC = (_) => {
 
     const [user, setUser] = useState<User>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    const [offline, setOffline] = useState<boolean>(false);
 
     useEffect(() => {
         const locale = Localization.locale.split("-")[0];
@@ -41,6 +44,20 @@ export const Root: FC = (_) => {
             setIsLoading(false);
         });
     }, []);
+
+    useEffect(() => {
+        return onValue(ref(getDatabase(), ".info/connected"), snapshot => {
+             setOffline(!snapshot);
+        });
+    }, []);
+
+    if (offline) {
+        return (
+            <Center w={"100%"} h={"100%"}>
+                <Text padding={5} rounded={"md"} bg={"danger.500"}>{lang.lang.other.offline}</Text>
+            </Center>
+        );
+    }
 
     if (isLoading) {
         return (

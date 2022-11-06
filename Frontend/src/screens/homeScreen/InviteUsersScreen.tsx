@@ -9,6 +9,7 @@ import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {protectedAsyncCall} from "../../util/Util";
 import {setEventInvitations} from "../../firebase/Events";
 import {LangContext} from "../../util/Context";
+import {AsyncButton} from "../../util/AsyncButton";
 
 export const InviteUsersScreen: FC<NavScreen> = (props) => {
     const [friends, setFriends] = useState<string[]>([]);
@@ -37,9 +38,9 @@ export const InviteUsersScreen: FC<NavScreen> = (props) => {
     useLayoutEffect(() => {
         props.navigation.setOptions({
             headerRight: () => (
-                <Button colorScheme={"transparent"} onPress={handleSave} marginRight={2}>
+                <AsyncButton colorScheme={"transparent"} onPress={handleSave} marginRight={2}>
                     <Icon as={MaterialCommunityIcons} name={"check"} color={"white"} size={"lg"} />
-                </Button>
+                </AsyncButton>
             )
         });
     }, [props.navigation, invited]);

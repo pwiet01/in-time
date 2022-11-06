@@ -7,23 +7,30 @@ import {headerStyle, tabBarStyle} from "../../style/theme";
 import {CommunityScreen} from "../CommunityScreen";
 import {HomeScreen} from "../HomeScreen";
 import {SettingsScreen} from "../SettingsScreen";
-import {getDatabase, onValue, ref, set} from "firebase/database";
+import {child, get, getDatabase, onValue, ref, set} from "firebase/database";
 import {getAuth} from "firebase/auth";
 import {BadgeColor, BadgedElement} from "../../util/BadgedElement";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
-import {getDistanceFromLatLon, getStorageEvents, removeStorageEvent, setStorageValue} from "../../util/Util";
+import {getDistanceFromLatLon, getStorageEvents, setStorageEvents} from "../../util/Util";
 import {LatLng} from "react-native-maps";
 import {eventConfig} from "../../util/InTimeEvent";
+import * as Notifications from "expo-notifications";
+import * as BackgroundFetch from "expo-background-fetch";
 
 async function checkEvents(myCoords: LatLng) {
-    for (const [id, {time, location}] of Object.entries(await getStorageEvents())) {
-        if (Date.now() - time > eventConfig.earliestArrival &&
-            getDistanceFromLatLon(myCoords.latitude, myCoords.longitude, location.latitude, location.longitude) < 100) {
+    for (const event of await getStorageEvents()) {
+        if (Math.floor((Date.now() - event.time) / 1000) > eventConfig.earliestArrival &&
+            getDistanceFromLatLon(myCoords.latitude, myCoords.longitude, event.location.latitude, event.location.longitude) < 100) {
 
             try {
-                await set(ref(getDatabase(), "events/" + id + "/participants/" + getAuth().currentUser.uid + "/arrivalTime"), Date.now());
-                removeStorageEvent(id);
+                const participantRef = ref(getDatabase(), "events/" + event.id + "/participants/" + getAuth().currentUser.uid);
+                if ((await get(ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events/" + event.id))).val() === true) {
+                    await set(child(participantRef, "/arrivalTime"), Date.now());
+                }
+
+                const storageEvents = await getStorageEvents();
+                await setStorageEvents(storageEvents.filter(otherEvent => event.id !== otherEvent.id));
             } catch (e) {
                 console.log(e);
             }
@@ -37,6 +44,30 @@ TaskManager.defineTask("BACKGROUND_LOCATION_TASK", ({ data, error }) => {
     }
 
     checkEvents(data["locations"][0]["coords"]);
+});
+
+TaskManager.defineTask("BACKGROUND_FETCH_TASK", async () => {
+    try {
+        const dbRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events");
+        const remoteEvents = Object.entries((await get(dbRef)).val()).filter(([, status]) => status === true).map(([id]) => id);
+        const localEvents = await getStorageEvents();
+
+        await setStorageEvents(localEvents.filter(event => remoteEvents.includes(event.id)));
+        return BackgroundFetch.BackgroundFetchResult.NewData;
+    } catch (e) {
+        console.log(e);
+        return BackgroundFetch.BackgroundFetchResult.Failed;
+    }
+});
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => {
+        return {
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true
+        };
+    }
 });
 
 const Tab = createBottomTabNavigator();
@@ -53,12 +84,26 @@ export const AuthenticatedRoot: FC = (_) => {
 
     useEffect(() => {
         async function requestPermissions() {
-            if ((await Location.requestForegroundPermissionsAsync()).granted && (await Location.requestBackgroundPermissionsAsync()).granted) {
-                Location.startLocationUpdatesAsync("BACKGROUND_LOCATION_TASK");
+            if ((await Location.requestForegroundPermissionsAsync()).granted) {
+                Location.watchPositionAsync({}, (location) => {
+                    checkEvents(location.coords);
+                });
+
+                if ((await Location.requestBackgroundPermissionsAsync()).granted) {
+                    Location.startLocationUpdatesAsync("BACKGROUND_LOCATION_TASK");
+                }
+            }
+        }
+
+        async function enableNotifications() {
+            if ((await Notifications.requestPermissionsAsync()).granted) {
+                Notifications.addNotificationReceivedListener(console.log);
             }
         }
 
         requestPermissions();
+        enableNotifications();
+
         const userRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/friendRequests");
         return onValue(userRef, (snapshot) => {
             const value = snapshot.val();
@@ -67,10 +112,10 @@ export const AuthenticatedRoot: FC = (_) => {
     }, []);
 
     useEffect(() => {
-        const eventsRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events");
+        const eventsRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/eventInvitations");
         return onValue(eventsRef, (snapshot) => {
             const value = snapshot.val();
-            setEventInvitations(value ? Object.entries(value).filter(([_, status]) => status === false).map(([id]) => id) : []);
+            setEventInvitations(value ? Object.keys(value) : []);
         });
     }, []);
 

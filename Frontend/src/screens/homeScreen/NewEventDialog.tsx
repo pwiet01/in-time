@@ -8,7 +8,6 @@ import {eventConfig, InTimeEvent} from "../../util/InTimeEvent";
 import {LatLng} from "react-native-maps";
 import {protectedAsyncCall} from "../../util/Util";
 import moment from "moment";
-import {getAuth} from "firebase/auth";
 
 interface NewEventDialogProps {
     location: LatLng,
@@ -35,7 +34,7 @@ export const NewEventDialog: FC<NewEventDialogProps> = (props) => {
                         {lang.home.specifyTitle}
                     </FormControl.ErrorMessage>
                 </FormControl>
-                <FormControl isInvalid={date.getTime() - new Date().getTime() < eventConfig.earliestNewEvent}>
+                <FormControl isInvalid={Math.floor((date.getTime() - Date.now()) / 1000) < eventConfig.earliestNewEvent}>
                     <View flexDir={"row"} alignSelf={"flex-start"} marginTop={3}>
                         <Button onPress={datePicker.onOpen} marginRight={1} variant={"outline"}>
                             {moment(date).format("L")}
@@ -62,13 +61,13 @@ export const NewEventDialog: FC<NewEventDialogProps> = (props) => {
 
     async function addEvent() {
         const event: InTimeEvent = {
-            admin: getAuth().currentUser.uid,
             general: {
                 id: null,
                 title: title,
-                time: new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes()).getTime()
+                time: new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes()).getTime(),
+                location: props.location,
+                admin: null
             },
-            location: props.location,
             participants: null
         };
 

@@ -1,4 +1,4 @@
-import {getDatabase, ref, get, set} from "firebase/database";
+import {getDatabase, ref, get, set, child, orderByChild, limitToFirst, equalTo, query} from "firebase/database";
 import {getAuth, updateProfile} from "firebase/auth";
 import {CustomUser} from "../util/CustomUser";
 import {axiosInstance} from "../util/AxiosInstance";
@@ -31,15 +31,23 @@ export async function deleteFriend(uid: string): Promise<void> {
     });
 }
 
-export async function getUser(uid: string): Promise<CustomUser> {
-    const db = ref(getDatabase(), "users/" + uid + "/general");
-    const dbEntry = (await get(db)).val();
+export async function getUsers(uid: string): Promise<CustomUser[]> {
+    const users = [];
+    const userRef = ref(getDatabase(), "users");
 
-    return {
-        ...dbEntry,
-        uid: uid,
-        displayName: dbEntry.displayName || uid
-    };
+    try {
+        const idMatch = (await get(child(userRef, uid + "/general"))).val();
+        if (idMatch) {
+            users.push({uid: uid, ...idMatch});
+        }
+    } catch (e) {}
+
+    const nameMatches: {[uid: string]: any} = (await get(query(userRef, orderByChild("general/displayName"), equalTo(uid), limitToFirst(5)))).val();
+    Object.entries(nameMatches).forEach(([uid, info]) => {
+        users.push({uid: uid, ...info.general});
+    });
+
+    return users;
 }
 
 export async function updateDisplayName(displayName: string) {

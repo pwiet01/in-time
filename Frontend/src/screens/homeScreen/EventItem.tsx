@@ -5,7 +5,8 @@ import {getDatabase, onValue, ref} from "firebase/database";
 import {getAuth} from "firebase/auth";
 
 interface EventItemProps {
-    eventId: string,
+    eventId?: string,
+    event?: InTimeEventGeneralInfo,
     onPress?: (event: InTimeEventGeneralInfo) => void
 }
 
@@ -14,23 +15,25 @@ export const EventItem: FC<EventItemProps> = (props) => {
     const [arrivalTime, setArrivalTime] = useState<number>(null);
 
     useEffect(() => {
-        const db = getDatabase();
-        const eventRef = ref(db, "events/" + props.eventId + "/general");
+        if (!props.event) {
+            const db = getDatabase();
+            const eventRef = ref(db, "events/" + props.eventId + "/general");
 
-        return onValue(eventRef, (snapshot) => {
-            const value = snapshot.val();
-            setEvent(value ? {...value, id: props.eventId} : null);
-        });
+            return onValue(eventRef, (snapshot) => {
+                const value = snapshot.val();
+                setEvent(value ? {...value, id: props.eventId} : null);
+            });
+        }
     }, []);
 
     useEffect(() => {
         const db = getDatabase();
-        const eventRef = ref(db, "events/" + props.eventId + "/participants/" + getAuth().currentUser.uid + "/arrivalTime");
+        const eventRef = ref(db, "events/" + (props.eventId || props.event.id) + "/participants/" + getAuth().currentUser.uid + "/arrivalTime");
 
         return onValue(eventRef, (snapshot) => {
             setArrivalTime(snapshot.val());
         });
     }, []);
 
-    return <EventItemStatic event={event} onPress={() => props.onPress(event)} arrivalTime={arrivalTime} />;
+    return <EventItemStatic event={props.event || event} onPress={() => props.onPress(props.event)} arrivalTime={arrivalTime} />;
 }

@@ -9,18 +9,19 @@ export interface Participant {
 export interface InTimeEventGeneralInfo {
     id: string,
     title: string,
-    time: number
+    time: number,
+    location: LatLng,
+    admin: string,
+    closed?: boolean
 }
 
 export interface InTimeEvent {
     general: InTimeEventGeneralInfo,
-    location: LatLng,
-    participants: Participant[],
-    admin: string
+    participants: Participant[]
 }
 
 export const eventConfig = {
-    earliestNewEvent: 1200,
+    earliestNewEvent: 900,
     earliestArrival: -600,
     latestArrival: 3600
 }

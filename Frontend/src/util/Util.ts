@@ -2,8 +2,13 @@ import {lang as langDE} from "../../lang/lang.de";
 import {lang as langEN} from "../../lang/lang.en";
 import {Toast} from "native-base";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {LatLng} from "react-native-maps";
-import {InTimeEvent} from "./InTimeEvent";
+import {eventConfig, InTimeEventGeneralInfo} from "./InTimeEvent";
+import {getAuth} from "firebase/auth";
+import {
+    cancelAllScheduledNotificationsAsync, dismissAllNotificationsAsync,
+    scheduleNotificationAsync
+} from "expo-notifications";
+import moment from "moment/moment";
 
 export function getLang(id: string): {key: string, lang: any} {
     switch (id) {
@@ -30,7 +35,7 @@ export async function protectedAsyncCall(target: () => Promise<any>, errMsg?: st
         return {success: true, data: result};
     } catch (e) {
         console.log(e);
-        Toast.show({description: errMsg || e.toString()});
+        Toast.show({description: errMsg || getLang(await getStorageValue("@language")).lang.other.error});
     }
 
     return {success: false, data: null};
@@ -50,35 +55,47 @@ export async function setStorageValue(key: string, value: string): Promise<void>
     } catch (e) {}
 }
 
-export interface StorageEvents {
-    [id: string]: {
-        time: number,
-        location: LatLng
-    }
-}
-
-export async function getStorageEvents(): Promise<StorageEvents> {
+export async function getStorageEvents(): Promise<InTimeEventGeneralInfo[]> {
     try {
-        return JSON.parse(await AsyncStorage.getItem("@event-locations")) || {};
+        return JSON.parse(await AsyncStorage.getItem("@event-locations:" + getAuth().currentUser.uid)) || [];
     } catch (e) {}
 
-    return {};
+    return [];
 }
 
-async function setStorageEvents(storageEvents: StorageEvents) {
+export async function setStorageEvents(storageEvents: InTimeEventGeneralInfo[]) {
     try {
-        await AsyncStorage.setItem("@event-locations", JSON.stringify(storageEvents));
+        const newEvents = JSON.stringify(storageEvents);
+        if (newEvents !== await AsyncStorage.getItem("@event-locations:" + getAuth().currentUser.uid)) {
+            await AsyncStorage.setItem("@event-locations:" + getAuth().currentUser.uid, newEvents);
+            const lang = getLang(await getStorageValue("@language")).lang;
+
+            await cancelAllScheduledNotificationsAsync();
+            await dismissAllNotificationsAsync();
+
+            await Promise.all(storageEvents
+                .filter(event => event.time + (eventConfig.earliestArrival * 1000) > Date.now())
+                .map(event => scheduleNotificationAsync({
+                    identifier: event.id + "-reminder",
+                    content: {
+                        title: lang.other.upcomingEvent,
+                        body: `${event.title} - ${moment(event.time).format("LT")}`
+                    },
+                    trigger: event.time + (eventConfig.earliestArrival * 1000)
+                })));
+
+            await Promise.all(storageEvents
+                .map(event => scheduleNotificationAsync({
+                    identifier: event.id + "-late",
+                    content: {
+                        title: lang.other.late,
+                        body: `${event.title} - ${moment(event.time).format("LT")}`,
+                        sticky: true
+                    },
+                    trigger: event.time > Date.now() ? event.time : null
+                })));
+        }
     } catch (e) {}
-}
-
-export async function addStorageEvent(event: InTimeEvent) {
-    await setStorageEvents({...(await getStorageEvents()), [event.general.id]: {time: event.general.time, location: event.location}});
-}
-
-export async function removeStorageEvent(eventId: string) {
-    const current = await getStorageEvents();
-    delete current[eventId];
-    await setStorageEvents(current);
 }
 
 export function getDistanceFromLatLon(lat1, lon1, lat2, lon2) {
