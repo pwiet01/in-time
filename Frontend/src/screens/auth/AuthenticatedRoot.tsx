@@ -1,6 +1,6 @@
 import React, {FC, useContext, useEffect, useState} from "react";
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
-import {LangContext, FriendRequestsContext, EventInvitationsContext} from "../../util/Context";
+import {EventInvitationsContext, FriendRequestsContext, LangContext} from "../../util/Context";
 import {Ionicons, MaterialCommunityIcons} from "@expo/vector-icons";
 import {Center, Icon, View} from "native-base";
 import {headerStyle, tabBarStyle} from "../../style/theme";
@@ -17,6 +17,7 @@ import {LatLng} from "react-native-maps";
 import {eventConfig} from "../../util/InTimeEvent";
 import * as Notifications from "expo-notifications";
 import * as BackgroundFetch from "expo-background-fetch";
+import {registerForPushNotificationsAsync} from "../../util/SetupPushNotifications";
 
 async function checkEvents(myCoords: LatLng) {
     for (const event of await getStorageEvents()) {
@@ -39,7 +40,7 @@ async function checkEvents(myCoords: LatLng) {
 }
 
 TaskManager.defineTask("BACKGROUND_LOCATION_TASK", ({ data, error }) => {
-    if (error) {
+    if (error || !getAuth().currentUser) {
         return;
     }
 
@@ -47,6 +48,10 @@ TaskManager.defineTask("BACKGROUND_LOCATION_TASK", ({ data, error }) => {
 });
 
 TaskManager.defineTask("BACKGROUND_FETCH_TASK", async () => {
+    if (!getAuth().currentUser) {
+        return BackgroundFetch.BackgroundFetchResult.NoData;
+    }
+
     try {
         const dbRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events");
         const remoteEvents = Object.entries((await get(dbRef)).val()).filter(([, status]) => status === true).map(([id]) => id);
@@ -95,14 +100,8 @@ export const AuthenticatedRoot: FC = (_) => {
             }
         }
 
-        async function enableNotifications() {
-            if ((await Notifications.requestPermissionsAsync()).granted) {
-                Notifications.addNotificationReceivedListener(console.log);
-            }
-        }
-
         requestPermissions();
-        enableNotifications();
+        registerForPushNotificationsAsync();
 
         const userRef = ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/friendRequests");
         return onValue(userRef, (snapshot) => {

@@ -31,7 +31,12 @@ export const EventItem: FC<EventItemProps> = (props) => {
         const eventRef = ref(db, "events/" + (props.eventId || props.event.id) + "/participants/" + getAuth().currentUser.uid + "/arrivalTime");
 
         return onValue(eventRef, (snapshot) => {
-            setArrivalTime(snapshot.val());
+            let value = snapshot.val();
+            if (!value) {
+                value = -1;
+            }
+
+            setArrivalTime(value);
         });
     }, []);
 

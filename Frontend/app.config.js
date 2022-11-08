@@ -22,6 +22,7 @@ export default () => ({
             "supportsTablet": true
         },
         "android": {
+            "googleServicesFile": "./google-services.json",
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#006BA1"
@@ -37,6 +38,18 @@ export default () => ({
         "web": {
             "favicon": "./assets/favicon.png"
         },
+        "plugins": [
+            [
+                "expo-notifications",
+                {
+                    "sounds": [
+                        "./assets/sounds/aha.mp3",
+                        "./assets/sounds/among_us.mp3",
+                        "./assets/sounds/another_one.mp3"
+                    ]
+                }
+            ]
+        ],
         "extra": {
             firebaseApiKey: process.env.FIREBASE_KEY
         }

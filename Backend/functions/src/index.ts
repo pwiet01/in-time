@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import {sendPushNotification} from "./PushNotifications";
 
 admin.initializeApp();
 
@@ -9,14 +10,17 @@ export const onRegister = functions.region("europe-west1").auth.user().onCreate(
 
 export const addFriend = functions.region("europe-west1").https.onRequest(async (req, res) => {
     const {me, other} = req.body;
+    const db = admin.database();
 
     try {
-        if ((await admin.database().ref("users/" + me + "/friends/" + other).get()).val() === true) {
+        if ((await db.ref("users/" + me + "/friends/" + other).get()).val() === true) {
             res.status(500).send("Friend already added");
             return;
         }
 
-        await admin.database().ref("users/" + other + "/friendRequests/" + me).set(true);
+        await db.ref("users/" + other + "/friendRequests/" + me).set(true);
+        const myName = (await db.ref("users/" + me + "/general/displayName").get()).val();
+        await sendPushNotification(other, "Freundschaftsanfrage", "Neue Freundschaftsanfrage von " + myName + "!");
         res.send("Success");
     } catch (e) {
         console.log(e);
@@ -140,6 +144,11 @@ export const setEventInvitations = functions.region("europe-west1").https.onRequ
         }
 
         await admin.database().ref().update(updates);
+
+        const eventName = (await admin.database().ref("events/" + eventId + "/general/title").get()).val();
+        await Promise.all(uids.filter(uid => !currentInvitations.has(uid)).map(uid =>
+            sendPushNotification(uid, "Neues Ereignis", `Du wurdest eingeladen zu "${eventName}"!`)));
+
         res.send("Success");
     } catch (e) {
         console.log(e);

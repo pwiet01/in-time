@@ -11,7 +11,6 @@ import {Center, Spinner, Text, useColorModeValue} from "native-base";
 import moment from "moment";
 import "moment/locale/de";
 import * as Localization from "expo-localization";
-import {getDatabase, onValue, ref} from "firebase/database";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,13 +21,17 @@ export const Root: FC = (_) => {
     const [user, setUser] = useState<User>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const [offline, setOffline] = useState<boolean>(false);
-
     useEffect(() => {
         const locale = Localization.locale.split("-")[0];
 
         async function loadLanguage() {
-            setLang(getLang(await getStorageValue("@language") || locale));
+            let language = await getStorageValue("@language");
+            if (!language) {
+                language = locale;
+                await setStorageValue("@language", language);
+            }
+
+            setLang(getLang(language));
         }
 
         loadLanguage();
@@ -44,20 +47,6 @@ export const Root: FC = (_) => {
             setIsLoading(false);
         });
     }, []);
-
-    useEffect(() => {
-        return onValue(ref(getDatabase(), ".info/connected"), snapshot => {
-             setOffline(!snapshot);
-        });
-    }, []);
-
-    if (offline) {
-        return (
-            <Center w={"100%"} h={"100%"}>
-                <Text padding={5} rounded={"md"} bg={"danger.500"}>{lang.lang.other.offline}</Text>
-            </Center>
-        );
-    }
 
     if (isLoading) {
         return (

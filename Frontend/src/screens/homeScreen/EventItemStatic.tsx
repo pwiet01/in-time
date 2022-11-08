@@ -49,7 +49,7 @@ export const EventItemStatic: FC<EventItemStaticProps> = (props) => {
     return (
         <TouchableOpacity style={{width: "100%", height: 100}} onPress={() => props.onPress(props.event.id)} disabled={!props.onPress}>
             <Center bgColor={bgColor} rounded={"xl"} padding={5} w={"100%"} h={"100%"}>
-                {props.event ? <View flexDir={"row"} justifyContent={"flex-start"} alignItems={"center"} w={"100%"} h={"100%"}>
+                {props.event && status ? <View flexDir={"row"} justifyContent={"flex-start"} alignItems={"center"} w={"100%"} h={"100%"}>
                     {getInformation()}
                     {getStatusComponent()}
                 </View> : <Spinner size={"lg"} />}

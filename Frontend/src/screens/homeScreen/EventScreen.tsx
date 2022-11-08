@@ -21,13 +21,10 @@ import {
     removeEventParticipant
 } from "../../firebase/Events";
 import {AsyncButton} from "../../util/AsyncButton";
-import {TouchableOpacity} from "react-native";
 
 export const EventScreen: FC<NavScreen> = (props) => {
     const {lang} = useContext(LangContext);
     const [event, setEvent] = useState<InTimeEvent>(null);
-
-    const [showLocation, setShowLocation] = useState<boolean>(false);
 
     const selectedUser = useRef<CustomUser>(null);
     const removeParticipantDialog = useDisclose();
@@ -151,22 +148,16 @@ export const EventScreen: FC<NavScreen> = (props) => {
     function getLocationSection() {
         return (
             <View marginTop={10} w={"100%"}>
-                <TouchableOpacity style={{flexDirection: "row", alignItems: "center", marginBottom: 15}} onPress={() => setShowLocation(prev => !prev)}>
-                    <Heading marginRight={3}>{lang.home.location}</Heading>
-                    <Icon as={MaterialCommunityIcons} name={showLocation ? "eye-off" : "eye"} color={"primary.500"} size={6} />
-                </TouchableOpacity>
-                {
-                    showLocation &&
-                    <MapView style={{width: "100%", height: 300}}
-                             showsUserLocation
-                             initialRegion={{
-                                 ...event.general.location,
-                                 latitudeDelta: 0.01,
-                                 longitudeDelta: 0.01
-                             }}>
-                        <Marker coordinate={event.general.location}/>
-                    </MapView>
-                }
+                <Heading marginBottom={3}>{lang.home.location}</Heading>
+                <MapView style={{width: "100%", height: 300}}
+                         showsUserLocation
+                         initialRegion={{
+                             ...event.general.location,
+                             latitudeDelta: 0.01,
+                             longitudeDelta: 0.01
+                         }}>
+                    <Marker coordinate={event.general.location}/>
+                </MapView>
             </View>
         );
     }

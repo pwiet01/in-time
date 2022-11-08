@@ -8,11 +8,9 @@ import {child, getDatabase, onValue, ref} from "firebase/database";
 import {getAuth} from "firebase/auth";
 import {BadgedElement} from "../../util/BadgedElement";
 import {EventInvitationsContext, LangContext} from "../../util/Context";
-import {LoadingScreen} from "../../util/LoadingScreen";
 import {InTimeEventGeneralInfo} from "../../util/InTimeEvent";
 import {protectedAsyncCall, setStorageEvents} from "../../util/Util";
 import {removeClosedEvent} from "../../firebase/Events";
-import {scheduleNotificationAsync} from "expo-notifications";
 
 export const EventList: FC<NavScreen> = (props) => {
     const {lang} = useContext(LangContext);

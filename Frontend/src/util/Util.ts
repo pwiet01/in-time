@@ -66,8 +66,8 @@ export async function getStorageEvents(): Promise<InTimeEventGeneralInfo[]> {
 export async function setStorageEvents(storageEvents: InTimeEventGeneralInfo[]) {
     try {
         const newEvents = JSON.stringify(storageEvents);
-        if (newEvents !== await AsyncStorage.getItem("@event-locations:" + getAuth().currentUser.uid)) {
-            await AsyncStorage.setItem("@event-locations:" + getAuth().currentUser.uid, newEvents);
+        if (newEvents !== await getStorageValue("@event-locations:" + getAuth().currentUser.uid)) {
+            await setStorageValue("@event-locations:" + getAuth().currentUser.uid, newEvents);
             const lang = getLang(await getStorageValue("@language")).lang;
 
             await cancelAllScheduledNotificationsAsync();
@@ -79,9 +79,13 @@ export async function setStorageEvents(storageEvents: InTimeEventGeneralInfo[]) 
                     identifier: event.id + "-reminder",
                     content: {
                         title: lang.other.upcomingEvent,
-                        body: `${event.title} - ${moment(event.time).format("LT")}`
+                        body: `${event.title} - ${moment(event.time).format("LT")}`,
+                        sound: "among_us.mp3"
                     },
-                    trigger: event.time + (eventConfig.earliestArrival * 1000)
+                    trigger: {
+                        date: event.time + (eventConfig.earliestArrival * 1000),
+                        channelId: "reminder"
+                    }
                 })));
 
             await Promise.all(storageEvents
@@ -90,9 +94,13 @@ export async function setStorageEvents(storageEvents: InTimeEventGeneralInfo[]) 
                     content: {
                         title: lang.other.late,
                         body: `${event.title} - ${moment(event.time).format("LT")}`,
-                        sticky: true
+                        sticky: true,
+                        sound: "aha.mp3"
                     },
-                    trigger: event.time > Date.now() ? event.time : null
+                    trigger: {
+                        date: event.time > Date.now() ? event.time : null,
+                        channelId: "late"
+                    }
                 })));
         }
     } catch (e) {}

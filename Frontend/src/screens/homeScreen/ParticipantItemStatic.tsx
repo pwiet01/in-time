@@ -24,7 +24,7 @@ export const ParticipantItemStatic: FC<ParticipantItemStaticProps> = (props) => 
 
     const imgSize = 60;
 
-    const [status, setStatus] = useState<{status: number, time: number}>(getStatus(props.eventTime, null));
+    const [status, setStatus] = useState<{status: number, time: number}>(getStatus(props.eventTime, props.participant.arrivalTime));
 
     useEffect(() => {
         const timerId = setInterval(() => setStatus(getStatus(props.eventTime, props.participant.arrivalTime)), 1000);
@@ -58,7 +58,7 @@ export const ParticipantItemStatic: FC<ParticipantItemStaticProps> = (props) => 
         return (
             <View justifyContent={"center"} alignItems={"flex-start"} flex={1}>
                 {name}
-                {status.status > 1 && statusText}
+                {props.participant.arrivalTime && status.status > 1 && statusText}
             </View>
         );
     }
@@ -66,7 +66,7 @@ export const ParticipantItemStatic: FC<ParticipantItemStaticProps> = (props) => 
     return (
         <TouchableOpacity style={{width: "100%", height: 80}} onPress={() => props.onPress(props.user)} disabled={props.isMe || props.disabled}>
             <Center bgColor={bgColor} rounded={"xl"} padding={5} w={"100%"} h={"100%"} borderColor={"gold"} borderWidth={props.isMe ? 2 : 0}>
-                {props.user ? <View flexDir={"row"} justifyContent={"flex-start"} alignItems={"center"} w={"100%"} h={"100%"}>
+                {props.user && status ? <View flexDir={"row"} justifyContent={"flex-start"} alignItems={"center"} w={"100%"} h={"100%"}>
                     {getProfilePicture()}
                     {getOtherInformation()}
                 </View> : <Spinner size={"lg"} />}

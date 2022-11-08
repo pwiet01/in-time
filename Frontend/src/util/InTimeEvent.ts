@@ -34,14 +34,11 @@ export const statusColor = {
 }
 
 export function getStatus(eventTime: number, arrivalTime: number) {
-    if (eventTime == null) {
-        return {
-            status: 0,
-            time: 0
-        };
+    if (eventTime == null || arrivalTime == null) {
+        return null;
     }
 
-    if (arrivalTime != null) {
+    if (arrivalTime !== -1) {
         return {
             status: 3,
             time: Math.floor((arrivalTime - eventTime) / 1000)
@@ -69,7 +66,7 @@ export function getEventParticipants(event: {participants: {[uid: string]: any}}
     const result: Participant[] = [];
     for (const [uid, other] of Object.entries(event.participants)) {
         if (other.accepted === true) {
-            result.push({...other, uid: uid});
+            result.push({...other, uid: uid, arrivalTime: other.arrivalTime || -1});
         }
     }
 
