@@ -39,7 +39,8 @@
     "expo-localization": "~13.1.0",
     "expo-task-manager": "~10.3.0",
     "expo-notifications": "~0.16.1",
-    "expo-background-fetch": "~10.3.0"
+    "expo-background-fetch": "~10.3.0",
+    "expo-constants": "~13.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

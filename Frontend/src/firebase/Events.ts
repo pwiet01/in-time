@@ -2,9 +2,8 @@ import {InTimeEvent} from "../util/InTimeEvent";
 import {axiosInstance} from "../util/AxiosInstance";
 import {getAuth} from "firebase/auth";
 import {getDatabase, ref, remove, set} from "firebase/database";
-import {addStorageEvent} from "../util/Util";
 
-export async function createEvent(event: InTimeEvent): Promise<void> {
+export async function createEvent(event: InTimeEvent) {
     await axiosInstance.post("createEvent", {uid: getAuth().currentUser.uid, event: event});
 }
 
@@ -20,8 +19,6 @@ export async function acceptEventInvite(event: InTimeEvent) {
         eventId: event.general.id,
         uid: getAuth().currentUser.uid
     });
-
-    addStorageEvent(event.general);
 }
 
 export async function rejectEventInvite(eventId: string) {

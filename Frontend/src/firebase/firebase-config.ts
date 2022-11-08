@@ -1,5 +1,7 @@
+import Constants from "expo-constants";
+
 export const firebaseConfig = {
-    apiKey: "***",
+    apiKey: Constants.expoConfig.extra.firebaseApiKey,
     authDomain: "in-time-bf12b.firebaseapp.com",
     projectId: "in-time-bf12b",
     storageBucket: "in-time-bf12b.appspot.com",
