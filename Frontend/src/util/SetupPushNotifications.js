@@ -5,7 +5,6 @@ import {AndroidImportance} from "expo-notifications";
 import {getStorageValue, setStorageValue} from "./Util";
 import {getDatabase, ref, set} from "firebase/database";
 import {getAuth} from "firebase/auth";
-import {Toast} from "native-base";
 
 export async function registerForPushNotificationsAsync() {
     const result = [];
@@ -27,31 +26,33 @@ export async function registerForPushNotificationsAsync() {
                 await setStorageValue("@push-token", token);
             } catch (e) {
                 console.log(e);
-                Toast.show({description: e.toString()});
             }
         }
     }
 
     if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync("invite", {
+        await Notifications.setNotificationChannelAsync("invite1", {
             name: "Invite",
             vibrationPattern: [0, 50, 100, 50, 100, 50],
-            sound: "another_one.mp3",
-            importance: AndroidImportance.MAX
+            sound: "another_one.wav",
+            importance: AndroidImportance.MAX,
+            enableVibrate: true
         });
 
-        await Notifications.setNotificationChannelAsync("reminder", {
+        await Notifications.setNotificationChannelAsync("reminder1", {
             name: "Reminder",
             vibrationPattern: [0, 50, 100, 50, 100, 50],
-            sound: "among_us.mp3",
-            importance: AndroidImportance.MAX
+            sound: "among_us.wav",
+            importance: AndroidImportance.MAX,
+            enableVibrate: true
         });
 
-        await Notifications.setNotificationChannelAsync("late", {
+        await Notifications.setNotificationChannelAsync("late1", {
             name: "Late",
             vibrationPattern: [0, 50, 100, 50, 100, 50],
-            sound: "aha.mp3",
-            importance: AndroidImportance.MAX
+            sound: "aha.wav",
+            importance: AndroidImportance.MAX,
+            enableVibrate: true
         });
     }
 };

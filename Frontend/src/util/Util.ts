@@ -80,11 +80,11 @@ export async function setStorageEvents(storageEvents: InTimeEventGeneralInfo[]) 
                     content: {
                         title: lang.other.upcomingEvent,
                         body: `${event.title} - ${moment(event.time).format("LT")}`,
-                        sound: "among_us.mp3"
+                        sound: "among_us.wav"
                     },
                     trigger: {
                         date: event.time + (eventConfig.earliestArrival * 1000),
-                        channelId: "reminder"
+                        channelId: "reminder1"
                     }
                 })));
 
@@ -95,11 +95,11 @@ export async function setStorageEvents(storageEvents: InTimeEventGeneralInfo[]) 
                         title: lang.other.late,
                         body: `${event.title} - ${moment(event.time).format("LT")}`,
                         sticky: true,
-                        sound: "aha.mp3"
+                        sound: "aha.wav"
                     },
                     trigger: {
                         date: event.time > Date.now() ? event.time : null,
-                        channelId: "late"
+                        channelId: "late1"
                     }
                 })));
         }

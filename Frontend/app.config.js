@@ -43,9 +43,9 @@ export default () => ({
                 "expo-notifications",
                 {
                     "sounds": [
-                        "./assets/sounds/aha.mp3",
-                        "./assets/sounds/among_us.mp3",
-                        "./assets/sounds/another_one.mp3"
+                        "./assets/sounds/aha.wav",
+                        "./assets/sounds/among_us.wav",
+                        "./assets/sounds/another_one.wav"
                     ]
                 }
             ]

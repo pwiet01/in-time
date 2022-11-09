@@ -121,9 +121,11 @@ export const setEventInvitations = functions.region("europe-west1").https.onRequ
         const participants: {[id: string]: any} = (await admin.database().ref("events/" + eventId + "/participants").get()).val();
         const currentInvitations = new Set<string>();
 
-        for (const [id, {accepted}] of Object.entries(participants)) {
-            if (accepted === false) {
-                currentInvitations.add(id);
+        if (participants) {
+            for (const [id, {accepted}] of Object.entries(participants)) {
+                if (accepted === false) {
+                    currentInvitations.add(id);
+                }
             }
         }
 
@@ -146,7 +148,7 @@ export const setEventInvitations = functions.region("europe-west1").https.onRequ
         await admin.database().ref().update(updates);
 
         const eventName = (await admin.database().ref("events/" + eventId + "/general/title").get()).val();
-        await Promise.all(uids.filter(uid => !currentInvitations.has(uid)).map(uid =>
+        await Promise.all([...uids].filter(uid => !currentInvitations.has(uid)).map(uid =>
             sendPushNotification(uid, "Neues Ereignis", `Du wurdest eingeladen zu "${eventName}"!`)));
 
         res.send("Success");

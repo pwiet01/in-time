@@ -7,7 +7,7 @@ import {headerStyle, tabBarStyle} from "../../style/theme";
 import {CommunityScreen} from "../CommunityScreen";
 import {HomeScreen} from "../HomeScreen";
 import {SettingsScreen} from "../SettingsScreen";
-import {child, get, getDatabase, onValue, ref, set} from "firebase/database";
+import {get, getDatabase, onValue, ref, set} from "firebase/database";
 import {getAuth} from "firebase/auth";
 import {BadgeColor, BadgedElement} from "../../util/BadgedElement";
 import * as Location from "expo-location";
@@ -25,9 +25,10 @@ async function checkEvents(myCoords: LatLng) {
             getDistanceFromLatLon(myCoords.latitude, myCoords.longitude, event.location.latitude, event.location.longitude) < 100) {
 
             try {
-                const participantRef = ref(getDatabase(), "events/" + event.id + "/participants/" + getAuth().currentUser.uid);
-                if ((await get(ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events/" + event.id))).val() === true) {
-                    await set(child(participantRef, "/arrivalTime"), Date.now());
+                const arrivalTimeRef = ref(getDatabase(), "events/" + event.id + "/participants/" + getAuth().currentUser.uid + "/arrivalTime");
+                if ((await get(ref(getDatabase(), "users/" + getAuth().currentUser.uid + "/events/" + event.id))).val() === true &&
+                    (await get(arrivalTimeRef)).val() == null) {
+                    await set(arrivalTimeRef, Date.now());
                 }
 
                 const storageEvents = await getStorageEvents();
