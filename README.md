@@ -1,4 +1,4 @@
-# inTime
+# inTime (CURRENTLY OFFLINE)
 A mobile app for planning meetings and automatically tracking a user's late arrivals :D
 
 ## Features
